@@ -1,0 +1,4 @@
+[package]
+name = "unicode_snowlang"
+version = "0.1.0"
+authors = ["Jack Fransham <jack.fransham@cuvva.co>"]
