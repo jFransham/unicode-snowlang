@@ -65,7 +65,7 @@ fn parse_next<T: Iterator<Item=String>>(strs: &mut T) -> ParseResult<LanguageNod
 }
 
 fn run(program: &LanguageNode) -> () {
-    let mut buffer = [0u8; 65535];
+    let mut buffer = [0u8; 30000];
     run_params(program, &mut buffer, 0);
 }
 
@@ -151,7 +151,6 @@ fn main() -> () {
                     // for c in p2 { println!("{}", c); }
                     
                     let prog = parse(&mut program);
-                    println!("{:?}", prog);
                     run(&prog);
                 } else {
                     panic!("File read failed for {}.", first_arg);
