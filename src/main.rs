@@ -21,16 +21,36 @@ enum LanguageNode {
     Many( Vec<LanguageNode> ),  // multiple of the nodes above in sequence
 }
 
+fn optimise(n: LanguageNode) -> Option<LanguageNode> {
+    use ::LanguageNode::*;
+
+    match n {
+        Brackets(inner) => {
+            let i_opt = optimise(*inner);
+
+            if let Some(o) = i_opt { Some(Brackets(Box::new(o))) } else { None }
+        },
+        Many(v) => {
+            let mut c: usize = 0;
+            return None;
+            /* while let Some(next) = v.get(c) {
+                //match 
+            } */
+        },
+        _ => { None }
+    }
+}
+
 fn parse<T: Iterator<Item=String>>(strs: &mut T) -> LanguageNode {
     use ::LanguageNode::*;
     use ::ParseResult::*;
 
     let mut out_vec = vec![];
-    
+
     loop {
         let parse_result = parse_next(strs);
         if parse_result == ParseResult::Eof { break; }
-        
+
         if let Node(p) = parse_result { out_vec.push(p); }
     }
 
