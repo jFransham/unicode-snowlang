@@ -67,17 +67,15 @@ fn parse_next<T: Iterator<Item=String>>(strs: &mut T) -> ParseResult<LanguageNod
         let borrow: &str = &n;
 
         match borrow {
-            "☃->☃"    => Node(IncrementPointer),
-            "☃<-☃"    => Node(DecrementPointer),
-            "❄"       => Node(IncrementCounter),
-            "☀"       => Node(DecrementCounter),
-            "☃?"      => Node(ReadFromStd),
-            "☃!"      => Node(WriteToStd),
-            "unicode" => Node(
-                    Brackets(Box::new(parse(strs)))
-                ),
-            "snowman" => Eof,
-            _         => Nop,
+            ">" => Node(IncrementPointer),
+            "<" => Node(DecrementPointer),
+            "+" => Node(IncrementCounter),
+            "-" => Node(DecrementCounter),
+            "," => Node(ReadFromStd),
+            "." => Node(WriteToStd),
+            "[" => Node(Brackets(Box::new(parse(strs)))),
+            "]" => Eof,
+            _   => Nop,
         }
     } else {
         Eof
@@ -85,11 +83,11 @@ fn parse_next<T: Iterator<Item=String>>(strs: &mut T) -> ParseResult<LanguageNod
 }
 
 fn run(program: &LanguageNode) -> () {
-    let mut buffer = [0u8; 30000];
+    let mut buffer = [0usize; 30000];
     run_params(program, &mut buffer, 0);
 }
 
-fn run_params(program: &LanguageNode, buffer: &mut [u8], pointer: usize) -> usize {
+fn run_params(program: &LanguageNode, buffer: &mut [usize], pointer: usize) -> usize {
     use ::LanguageNode::*;
 
     match *program {
@@ -106,22 +104,24 @@ fn run_params(program: &LanguageNode, buffer: &mut [u8], pointer: usize) -> usiz
             pointer
         },
         ReadFromStd      => {
-            if let Some(counter) = buffer.get_mut(pointer) {
+            {
+                let counter = buffer.get_mut(pointer).unwrap();
                 let stdin = io::stdin();
                 let mut handle = stdin.lock();
-                let mut std_in_buf: [u8; 1] = [0];
                 
-                if let Err(e) = handle.read(&mut std_in_buf) {
-                    panic!("StdIn read failed: {}.", e);
-                }
-                
-                *counter = std_in_buf[0];
+                *counter = handle.lines()
+                    .next()
+                    .unwrap()
+                    .unwrap()
+                    .trim()
+                    .parse::<usize>()
+                    .unwrap();
             }
 
             pointer
         },
         WriteToStd       => {
-            if let Some(counter) = buffer.get(pointer) { print!("{}", *counter as char); }
+            if let Some(counter) = buffer.get(pointer) { print!("{} ", *counter); }
 
             pointer
         },
@@ -165,8 +165,7 @@ fn main() -> () {
             if let Ok(mut file) = File::open(first_arg.clone()) {
                 let mut s = String::new();
                 if let Ok(_) = file.read_to_string(&mut s) {
-                    let mut program = s.split_whitespace().map(|s| s.to_string());
-
+                    let mut program = s.chars().map(|s| s.to_string());
                     // let mut p2 = s.split_whitespace().map(|s| s.to_string());
                     // for c in p2 { println!("{}", c); }
                     
@@ -179,5 +178,5 @@ fn main() -> () {
                 panic!("File open failed for {}.", first_arg);
             }
         }
-    }
+    } else { panic!() }
 }
