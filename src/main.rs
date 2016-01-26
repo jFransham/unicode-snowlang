@@ -157,10 +157,14 @@ fn main() -> () {
     
     if let Some(first_arg) = args.next() {
         if first_arg == "-l" ||
-           first_arg.starts_with("--lit") {
-            let mut program = args;
+            first_arg.starts_with("--lit") {
+            let mut program = args.next()
+                .unwrap()
+                .chars()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>();
 
-            run(&parse(&mut program));
+            run(&parse(&mut program.into_iter()));
         } else {
             if let Ok(mut file) = File::open(first_arg.clone()) {
                 let mut s = String::new();
